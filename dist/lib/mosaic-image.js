@@ -125,6 +125,8 @@ class MosaicImage {
                         let img = yield jimp_image_1.JimpImage.read(this.thumbsDirectoryFromRead + '/' + thumb).catch((err) => console.log('Warning: aborting read of ' + thumb));
                         if (img) {
                             let image = new jimp_image_1.JimpImage(img);
+                            let rgb = yield image.getAverageColor(0, 0, this.cellWidth, this.cellHeight);
+                            image.averageColor = rgb;
                             image.thumbRef = thumb;
                             this.tiles.push(image);
                             i++;
@@ -232,7 +234,7 @@ class MosaicImage {
                     //Create an array of the differences between the given rgb and all the tiles
                     for (let i = 0; i < this.tiles.length; i++) {
                         let tile = this.tiles[i];
-                        let rgb = yield tile.getAverageColor(0, 0, this.cellWidth, this.cellHeight);
+                        let rgb = tile.averageColor;
                         let diff = imageAvgColor.getColorDistance(rgb);
                         tilesDiff.push(new TileIndexAndDifference(i, diff));
                     }
