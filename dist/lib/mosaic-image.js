@@ -125,6 +125,7 @@ class MosaicImage {
                         let img = yield jimp_image_1.JimpImage.read(this.thumbsDirectoryFromRead + '/' + thumb).catch((err) => console.log('Warning: aborting read of ' + thumb));
                         if (img) {
                             let image = new jimp_image_1.JimpImage(img);
+                            image.thumbRef = thumb;
                             this.tiles.push(image);
                             i++;
                         }
@@ -191,6 +192,7 @@ class MosaicImage {
      */
     processRowsAndColumns(rowStart, colStart, numRows, numCols) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const thumbsCoord = [];
             if (this.enableConsoleLogging)
                 console.log(`${new Date().toString()} - Generating mosaic from (${rowStart}, ${colStart}) to (${rowStart + numRows}, ${colStart + numCols})`);
             for (let row = rowStart; row < numRows; row++) {
@@ -201,6 +203,7 @@ class MosaicImage {
                         let imageAvgColor = yield this.image.getAverageColor(col * this.cellWidth, row * this.cellHeight, this.cellWidth, this.cellHeight);
                         //Get the best tile from our tiles array for this average color
                         let bestTile = yield this.getBestTileForImage(imageAvgColor, row, col);
+                        thumbsCoord.push({x:row,y:col,thumbRef:bestTile.thumbRef});
                         //Composite the calculated tile in the final image
                         this.image.composite(bestTile, col * this.cellWidth, row * this.cellHeight);
                     }
@@ -208,7 +211,7 @@ class MosaicImage {
                 });
                 yield _processColsForRow();
             }
-            resolve();
+            resolve(thumbsCoord);
         }));
     }
     /**
@@ -290,7 +293,7 @@ class MosaicImage {
                 yield this.readTiles().catch((err) => Promise.reject(err));
                 if (this.tiles.length > 0) {
                     //Then we process the image and generate the mosaic
-                    yield this.processRowsAndColumns(0, 0, this.rows, this.columns).catch((err) => Promise.reject(err));
+                    const thumbsCoord = yield this.processRowsAndColumns(0, 0, this.rows, this.columns).catch((err) => Promise.reject(err));
                     console.log('Saving mosaic image...');
                     //Save the image in disk
                     let outputImageName = yield this.image.save().catch((err) => Promise.reject(err));
@@ -298,7 +301,7 @@ class MosaicImage {
                         console.log('Mosaic image saved! --> ' + outputImageName);
                     //Finally we generate the thumbs folder in order to save time in following executions
                     this.generateThumbs();
-                    resolve();
+                    resolve(thumbsCoord);
                 }
                 else {
                     reject(`Tiles were not loaded`);
