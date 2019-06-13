@@ -38,6 +38,7 @@ function mosaic(inputImagePath, tilesDirectory, cellWidth, cellHeight, columns, 
             }
             else {
                 let image = new jimp_image_1.JimpImage(img);
+                image.name = (inputImagePath.substring(inputImagePath.lastIndexOf('/')+1).split('.').slice(0, -1).join('.'));
                 let mosaicImage = new mosaic_image_1.MosaicImage(image, tilesDirectory, cellWidth, cellHeight, columns, rows, thumbsDirectoryFromRead, thumbsDirectoryToWrite, enableConsoleLogging);
                 let [err, thumbsCoord] = yield utility_1.catchEm(mosaicImage.generate());
                 if (err) {

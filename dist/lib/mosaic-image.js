@@ -298,7 +298,7 @@ class MosaicImage {
                     const thumbsCoord = yield this.processRowsAndColumns(0, 0, this.rows, this.columns).catch((err) => Promise.reject(err));
                     console.log('Saving mosaic image...');
                     //Save the image in disk
-                    let outputImageName = yield this.image.save().catch((err) => Promise.reject(err));
+                    let outputImageName = yield this.image.save('outputs/'+this.image.name).catch((err) => Promise.reject(err));
                     if (this.enableConsoleLogging)
                         console.log('Mosaic image saved! --> ' + outputImageName);
                     //Finally we generate the thumbs folder in order to save time in following executions
